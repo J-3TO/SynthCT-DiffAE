@@ -1,0 +1,69 @@
+# =============================================================================
+# Hyperparameters for 2p1_train_pe_classifiers.py -- ResNet-50 backbone variant.
+# =============================================================================
+
+seed: 42
+variants: [real, fake, balanced]
+n_runs: 10                          # repeated runs per variant
+
+paths:
+  # EDIT ME: point these at your own copy of the Kaggle RSNA-STR-PE-Detection dataset.
+  metadata_csv: /path/to/RSNA_PE/train.csv
+  zip_path:     /path/to/RSNA_PE/rsna-str-pulmonary-embolism-detection.zip
+  # EDIT ME: fake_images/fake_labels.npy produced by stage 1
+  # (1_generateData/1p2_generate_fake_dataset_RSNA_PE.py).
+  fake_images:  /path/to/output/fake_dataset/fake_images.npy
+  fake_labels:  /path/to/output/fake_dataset/fake_labels.npy
+  output_dir:   runs/pe_classifiers_resnet50_higherCFG
+  cache_dir:    cache/pe_classifiers_slices
+
+data:
+  px: 256                          # slice resolution
+  window: [-1000, 3000]            # HU [Hounsfield unit] clip range when loading DICOMs
+  num_workers: 8
+  # Preprocessing: clip to a tighter window, then scale to [-1, 1] (zero-mean, unit-scale)
+  # over that window. 
+  clip: [-200, 400]        # PE-contrast-relevant window
+  norm_mean: 100.0          # = (clip[0]+clip[1])/2
+  norm_std: 300.0           # = (clip[1]-clip[0])/2
+  augment: true                    # random flips / resized-crop / rotation on training images
+  real_train_rows: [500000, 700000]
+  real_train: {neg: 28500, pos: 9500}
+  real_val_rows: [800000, 820000]
+  real_val:   {neg: 3000, pos: 1000}   
+  balanced_per_class: 19000
+
+# Backbone = torchvision resnet50, ImageNet-pretrained
+model:
+  backbone: resnet50
+  pretrained: true
+  c_in: 1
+  num_classes: 2
+
+training:
+  batch_size: 64                  
+  base_lr: 3.0e-5                  # one-cycle peak LR 
+                                    
+  pct_start: 0.1                   # fraction of total steps spent on linear LR warmup before annealing
+  weight_decay: 0.0
+
+  class_weights:
+    real:     [0.25, 0.75]
+    fake:     [0.25, 0.75]
+    balanced: [1.0, 1.0]
+  max_epochs: 8
+  limit_train_batches: 600         # caps each epoch at ~600 steps
+  val_check_interval: 200          # validate every 200 *steps* (int = steps; float = fraction of an epoch)
+  limit_val_batches: 1.0           # fraction of the val set used at EVERY check (Lightning applies this uniformly,
+  early_stopping_patience: 30      # in validation checks (~2.5 epochs of no val/auroc improvement), not epochs
+  accelerator: gpu
+  devices: [0]                     # EDIT ME: adjust to a free GPU on your machine
+  precision: 32
+
+# Logging: CSV + Weights & Biases (W&B), W&B needs to be installed and logged in 
+logging:
+  csv: true
+  wandb:
+    project: pe-rsna-fake-resnet50_higherCFG   # EDIT ME: your Weights & Biases project name
+    entity: null                   # your W&B entity/team, or null for default
+    mode: online                   # online | offline | disabled

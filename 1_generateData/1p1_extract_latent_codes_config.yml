@@ -1,0 +1,29 @@
+# =============================================================================
+# Config for 1p1_extract_latent_codes.py. 
+# =============================================================================
+
+# EDIT ME: point these at your own copy of the Kaggle RSNA-STR-PE-Detection dataset
+# (train.csv + the competition zip archive).
+metadata_csv: /path/to/RSNA_PE/train.csv
+zip_path: /path/to/RSNA_PE/rsna-str-pulmonary-embolism-detection.zip
+
+# EDIT ME: GPU index to set CUDA_VISIBLE_DEVICES to, or null to leave it as-is.
+device_id: 0
+
+# Autoencoder checkpoint from stage 0 (0_trainDiffAE/); relative to the repo root.
+ckpt: model_ct_256_freed_e80
+# Output directory for train_codes.npy / train_code_labels.npy / norm_mean_std.npy; relative to
+# the repo root.
+out_dir: RSNA_PE_LatentCodes
+
+# Training-pool row range of train.csv 
+row_lo: 500000
+row_hi: 700000
+
+batch_size: 128   # encoder batch size
+workers: 8          # slice-loading threads
+prefetch: 64         # slices loaded ahead of the GPU
+stats_rows: 64        # #slices sampled to estimate the normalisation mean/std
+
+limit: null    # only process the first N rows in the range (for testing), or null for all
+force: false   # overwrite existing outputs if they already exist

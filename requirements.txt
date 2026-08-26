@@ -1,0 +1,13 @@
+attrs
+numpy
+pandas
+pydicom
+scipy
+torch
+torchvision
+torchmetrics
+lightning
+wandb
+pyyaml
+matplotlib
+tqdm

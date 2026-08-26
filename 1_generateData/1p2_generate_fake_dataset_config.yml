@@ -1,0 +1,39 @@
+# =============================================================================
+# Config for 1p2_generate_fake_dataset_RSNA_PE.py. 
+# =============================================================================
+
+# EDIT ME: GPU index to set CUDA_VISIBLE_DEVICES to, or null to leave it as-is.
+device_id: 0
+device: cuda:0   # torch device ("cuda:0" or "cpu")
+
+# Autoencoder checkpoint from stage 0 (0_trainDiffAE/); relative to the repo root.
+ckpt: model_ct_256_freed_e80
+# Directory holding the cached codes from 1p1_extract_latent_codes.py; relative to the repo root.
+codes_dir: RSNA_PE_LatentCodes
+# EDIT ME: where fake_images.npy / fake_labels.npy go (absolute path).
+out_dir: /path/to/output/fake_dataset
+
+
+n_neg: 28500   # number of PE-negative fakes to generate
+n_pos: 9500    # number of PE-positive fakes to generate
+
+kde_bandwidth: 0.1   # gaussian_kde bw_method for both classes
+
+# Memorisation guard: reject a fake code if its nearest REAL code is closer than
+# reject_threshold in *squared* L2. Leave this null to derive it automatically from RSNA-PE's
+# own real-to-real nearest-neighbour distances. Set an explicit float to override, or 0 to
+# disable rejection entirely.
+reject_threshold: null
+reject_percentile: 5   # percentile of real NN-distance used when auto-deriving the threshold
+nn_sample_size: 3000    # #real codes sampled to estimate the NN-distance percentiles
+
+n_candidates: 1000   # codes resampled from the KDE per batch
+batch_cap: 400         # max accepted codes decoded per diffusion batch
+
+cfg_scale: 6          # classifier-free guidance scale
+angle_step: 1           # diffusion angle step
+noise_retention: 0.65    # diffusion noise retention
+
+shuffle: false   # shuffle the combined dataset before saving
+seed: null        # RNG seed for reproducible sampling (null = nondeterministic)
+force: false      # overwrite existing outputs

@@ -1,0 +1,48 @@
+# =============================================================================
+# Config for 0_p1_train.py (the diffusion autoencoder trainer).
+#
+# Checkpoint paths below are relative to the repo root; 0_p1_train.py resolves them to
+# absolute paths when it loads this file.
+# =============================================================================
+
+# EDIT ME: paths to your dataset -- required (0_p1_train.py exits with an error if either is
+# left null).
+ds_path: null    # path to the dataset zip/archive
+ds_meta: null    # path to the dataset metadata CSV
+
+# Which training phases to run (see 0_p1_train.py's main()) -- 
+# each phase after the first loads the previous phase's checkpoint, so run them in order 
+# (in one invocation, or across separate runs of this script once the prior phase's 
+# checkpoint exists on disk).
+train_small: true
+pretrain_big: true
+fine_tune_big: true
+
+seed: 42   # RNG seed for reproducible training, or null for unseeded
+
+experiment_name: with_blur
+
+# EDIT ME: 'cuda' or 'cpu'.
+device: cuda
+# EDIT ME: GPU index (e.g. 0) to set CUDA_VISIBLE_DEVICES to, or null to leave it as-is.
+device_id: 0
+
+img_window: [-1000, 3000]   # HU (Hounsfield unit) clip range used throughout training/sampling
+use_blur: true               # blurring diffusion vs. plain noise-only diffusion (src/diffusion.py)
+img_res: 512                  # resolution of the raw dataset slices before downsampling
+
+# Checkpoints written/read across the 3 training phases (small -> pretrain big -> fine-tune big).
+small_model_checkpoint: src/checkpoints/small_model_final.pt
+big_model_pretrained_checkpoint: src/checkpoints/big_model_pretrained.pt
+big_model_fine_tuned_checkpoint: src/checkpoints/big_model_final.pt
+
+# Training-pool row range (of the metadata CSV) used across all three training phases.
+ds_id_first: 0
+ds_id_last: 200000
+
+batch_128: 32
+batch_256: 32
+lr_128: 0.00001
+lr_256: 0.00001
+small_model_epochs: 5
+final_training_epochs: 80
