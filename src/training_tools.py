@@ -153,7 +153,7 @@ def log_reco_results(
     if ema_model is not None:
         model = ema_model
 
-    torch.save(model.state_dict(), save_dir / '{save_name}_e{epoch}')
+    torch.save(model.state_dict(), save_dir / f'{save_name}_e{epoch}')
 
     imgs_n = torchvision.transforms.Normalize(diffusion.mean, diffusion.std)(imgs)
     n = len(imgs)
